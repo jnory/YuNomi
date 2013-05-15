@@ -17,7 +17,10 @@ def build(bld):
 	test_bitarray = bld.program(source='tests/test_y_bitarray.cpp', target='test_y_bitarray')
 	test_bitarray.includes=['include']
 
-	compress_by_fibarray = bld.program(source='tests/compress_by_fibarray.cpp', target='compress_by_fibarray')
+	compress_by_fibarray = bld.program(source='src/compress_by_fibarray.cpp', target='compress_by_fibarray')
 	compress_by_fibarray.includes=['include']
+
+	read_by_fibarray = bld.program(source='src/read_by_fibarray.cpp', target='read_by_fibarray')
+	read_by_fibarray.includes=['include']
 	
 	bld.install_files('${PREFIX}/include', ['include/fib_array.h', 'include/fib_coder.h', 'include/y_bitarray.h', 'include/y_defines.h'])

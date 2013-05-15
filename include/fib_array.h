@@ -78,6 +78,7 @@ namespace yunomi {
 
 			delete [] select;
 		}
+
 		fib_array(FILE *fp){
 			fread(&plsize, sizeof(size_t), 1, fp);
 			fread(&pl_unit_size, sizeof(size_t), 1, fp);
@@ -86,7 +87,7 @@ namespace yunomi {
 			fread(&l1, sizeof(uint64_t), 1, fp);
 			fread(&l2, sizeof(uint64_t), 1, fp);
 			fread(&l3, sizeof(uint64_t), 1, fp);
-			fc = new bitarray(fp);
+			fc = new fib_coder<T>(fp);
 			bits = new bitarray(fp);
 			pl = new bitarray(fp);
 			sl = new bitarray(fp);

@@ -14,7 +14,7 @@ namespace yunomi {
 
 		fib_coder(FILE *fp){
 			size_t size;
-			fread(&size, sizeof(T), 1, fp);
+			fread(&size, sizeof(size_t), 1, fp);
 
 			T *data = new T[size];
 			fread(data, sizeof(T), size, fp);
@@ -62,7 +62,7 @@ namespace yunomi {
 
 		void dump(FILE *fp){
 			size_t size = fibs.size();
-			fwrite(&size, sizeof(T), 1, fp);
+			fwrite(&size, sizeof(size_t), 1, fp);
 			fwrite(&(fibs[0]), sizeof(T), fibs.size(), fp);
 		}
 

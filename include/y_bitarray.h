@@ -22,14 +22,10 @@ namespace yunomi{
 		}
 
 		uint64_t get(size_t position, size_t size){
-			//std::cerr << "position="<<position << " size=" << size << std::endl;
-
 			size_t start_index = position>>UINT64_T_SIZE_BITS;
 			size_t start_bit = position&UINT64_T_SIZE_MASK;
 			size_t end_index = (position+size-1)>>UINT64_T_SIZE_BITS;
 			size_t end_bit = (position+size-1)&UINT64_T_SIZE_MASK;
-			//std::cerr << "(start_index, end_index)=(" << start_index << ", " << end_index << ")" << std::endl;
-			//std::cerr << "(start_bit, end_bit)=(" << start_bit << ", " << end_bit << ")" << std::endl;
 			
 			uint64_t ret=0;
 			ret = bits[start_index]>>start_bit;
