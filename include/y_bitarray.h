@@ -40,7 +40,7 @@ namespace yunomi{
 
 		void push_back(uint64_t data, size_t size){
 			if(size==0) return;
-			while(tail+size>=bitsize){
+			while(tail+size>bitsize){
 				expand();
 			}
 
@@ -56,14 +56,16 @@ namespace yunomi{
 		}
 
 		void pack(){
-			size_t new_bitsize = tail;
-			size_t new_bitssize = (new_bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
-			uint64_t *new_bits = new uint64_t[new_bitssize];
-			memcpy(new_bits, bits, sizeof(uint64_t)*new_bitssize);
-			
-			delete [] bits;
-			bits = new_bits;
-			bitsize = new_bitsize;
+			if(tail < bitsize){
+				size_t new_bitsize = tail;
+				size_t new_bitssize = (new_bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+				uint64_t *new_bits = new uint64_t[new_bitssize];
+				memcpy(new_bits, bits, sizeof(uint64_t)*new_bitssize);
+				
+				delete [] bits;
+				bits = new_bits;
+				bitsize = new_bitsize;
+			}
 		}
 
 		void inspect(){
