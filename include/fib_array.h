@@ -15,6 +15,11 @@ namespace yunomi {
 
 			size_t size = vr.size();
 			size_t bitssize = count_bitssize(vr); vr.move_head();
+
+      l3 = ceil(log2(bitssize+1));
+      l1 = l3*l3;
+      l2 = l1*l1;
+
 			size_t maxdiff=get_maxdiff(vr); vr.move_head();
 
 			bits = new bitarray(bitssize);
@@ -56,12 +61,11 @@ namespace yunomi {
 					current += bitsize;
 				}
 			}
-			size_t blockid=(size-1)/l1;
-			size_t pre_blockid=blockid-1;
+			size_t pre_blockid=(size-1)/l1;
 
 			pre_block=current_block;
 			current_block = current;
-			for(size_t j=pre_blockid*l1; blockid>0 && j<size; j++){
+			for(size_t j=pre_blockid*l1; pre_blockid>=0 && j<size; j++){
 				uint64_t diff = select[j-pre_blockid*l1];
 				if(current_block-pre_block>l2){
 					sl->push_back(diff, sl_unit_size);
@@ -166,10 +170,6 @@ namespace yunomi {
 		}
 
 		void prepare_selectdic(size_t vrsize, size_t bitssize, size_t maxdiff){
-      l3 = ceil(log2(bitssize+1));
-      l1 = l3*l3;
-      l2 = l1*l1;
-
 			plsize = (vrsize+l1-1)/l1;
 			pl_unit_size = ceil(log2(bitssize));
 

@@ -21,6 +21,10 @@ namespace yunomi{
 			fread(bits, sizeof(uint64_t), bitssize, fp);
 		}
 
+		virtual ~bitarray(){
+			delete [] bits;
+		}
+
 		uint64_t get(size_t position, size_t size){
 			size_t start_index = position>>UINT64_T_SIZE_BITS;
 			size_t start_bit = position&UINT64_T_SIZE_MASK;
