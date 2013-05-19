@@ -16,6 +16,10 @@ def build(bld):
 	test_fib_array.cxxflags=['-O3']
 	#test_fib_array.cxxflags=['-g']
 
+	test_fib_array2 = bld.program(source='tests/test_fib_array2.cpp', target='test_fib_array2')
+	test_fib_array2.includes=['include']
+	test_fib_array2.cxxflags=['-O3']
+
 	test_bitarray = bld.program(source='tests/test_y_bitarray.cpp', target='test_y_bitarray')
 	test_bitarray.includes=['include']
 	test_bitarray.cxxflags=['-O3']
@@ -28,5 +32,6 @@ def build(bld):
 	read_from_fibarray = bld.program(source='samples/read_from_fibarray.cpp', target='read_from_fibarray')
 	read_from_fibarray.includes=['include']
 	read_from_fibarray.cxxflags=['-O3']
+	#read_from_fibarray.cxxflags=['-g', '-DYUNOMI_DEBUG']
 	
 	bld.install_files('${PREFIX}/include', ['include/fib_array.h', 'include/fib_coder.h', 'include/y_bitarray.h', 'include/y_defines.h', 'include/array_value_reader.h', 'include/file_value_reader.h', 'include/value_reader.h'])

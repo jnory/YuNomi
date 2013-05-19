@@ -7,6 +7,10 @@
 #include"fib_coder.h"
 #include"value_reader.h"
 
+#define L1_WEIGHT 1.0
+#define L2_WEIGHT 0.001
+#define L3_WEIGHT 1.0
+
 namespace yunomi {
 	template <class T> class fib_array{
 	public:
@@ -16,9 +20,9 @@ namespace yunomi {
 			size_t size = vr.size();
 			size_t bitssize = count_bitssize(vr); vr.move_head();
 
-      l3 = ceil(log2(bitssize+1));
-      l1 = l3*l3;
-      l2 = l1*l1;
+      l3 = ceil(log2(bitssize+1))*L3_WEIGHT;
+      l1 = l3*l3*L1_WEIGHT;
+      l2 = l1*l1*L2_WEIGHT;
 
 			size_t maxdiff=get_maxdiff(vr); vr.move_head();
 
@@ -45,10 +49,10 @@ namespace yunomi {
 				for(size_t j=pre_blockid*l1; blockid>0 && j<i; j++){
 					uint64_t diff = select[j-pre_blockid*l1];
 					if(current_block-pre_block>l2){
-						sl->push_back(diff, sl_unit_size);
+						if(j%l1!=0) sl->push_back(diff, sl_unit_size);
 						if(j%l3==0) ss->push_back(0, ss_unit_size);
 					}else{
-						sl->push_back(0, sl_unit_size);
+						if(j%l1!=0) sl->push_back(0, sl_unit_size);
 						if(j%l3==0) ss->push_back(diff, ss_unit_size);
 					}
 				}
@@ -68,10 +72,10 @@ namespace yunomi {
 			for(size_t j=pre_blockid*l1; pre_blockid>=0 && j<size; j++){
 				uint64_t diff = select[j-pre_blockid*l1];
 				if(current_block-pre_block>l2){
-					sl->push_back(diff, sl_unit_size);
-					if(j%l3==0) ss->push_back(0, ss_unit_size);
+					if(j%l1!=0) sl->push_back(diff, sl_unit_size);
+					//if(j%l3==0) ss->push_back(0, ss_unit_size);
 				}else{
-					sl->push_back(0, sl_unit_size);
+					//if(j%l1!=0) sl->push_back(0, sl_unit_size);
 					if(j%l3==0) ss->push_back(diff, ss_unit_size);
 				}
 			}
@@ -143,6 +147,7 @@ namespace yunomi {
 			size_t current=0;
 			size_t block_head=0;
 			uint64_t maxdiff=0;
+
 			for(size_t i = 0; i < size; i++){
 				size_t bitsize=fc->get_bitsize(vr.pop_front());
 				if(i%l1==0){
@@ -185,6 +190,10 @@ namespace yunomi {
 
 		size_t select(size_t i){
 			size_t blockid = i/l1;
+			if(i>0&&(i-blockid-1)*sl_unit_size >= sl->size()){
+				return bits->size();
+			}
+
 			uint64_t pl_current = pl->get(blockid*pl_unit_size, pl_unit_size);
 			uint64_t pl_post;
 			if(blockid+1<plsize){
@@ -192,12 +201,13 @@ namespace yunomi {
 			}else{
 				pl_post = bits->size();
 			}
-			
+
+
 			if(pl_post-pl_current>l2){
 				if(i%l1==0){
 					return pl_current;
 				}else{
-					return pl_current+sl->get(i*sl_unit_size,sl_unit_size);
+					return pl_current+sl->get((i-blockid-1)*sl_unit_size,sl_unit_size);
 				}
 			}else{
 				size_t ss_pos=i/l3;
