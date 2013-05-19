@@ -5,14 +5,16 @@
 #include<math.h>
 #include"y_bitarray.h"
 #include"fib_coder.h"
+#include"value_reader.h"
 
 namespace yunomi {
 	template <class T> class fib_array{
 	public:
-		fib_array(T *data, size_t size){
+		fib_array(value_reader<T> &vr){
 			fc = new fib_coder<T>();
 
-			size_t bitssize = count_bitssize(data, size);
+			size_t size = vr.size();
+			size_t bitssize = count_bitssize(vr);
 
 			size_t select_unit_size = ceil(log2(bitssize));
 			bitarray *select = new bitarray(size*select_unit_size);
@@ -30,7 +32,8 @@ namespace yunomi {
 			for(size_t i = 0; i < size; i++){
 				uint64_t code=0;
 				size_t bitsize=0;
-				fc->encode(data[i], code, bitsize);
+
+				fc->encode(vr.pop_front(), code, bitsize);
 				bits->push_back(code,bitsize);
 				select->push_back(current, select_unit_size);
 				if(i%l1==0){
@@ -44,6 +47,7 @@ namespace yunomi {
 
 				current+=bitsize;
 			}
+			vr.move_head();
 
 			sl_unit_size=ceil(log2(maxdiff));
 			sl = new bitarray(sl_unit_size*size);
@@ -140,11 +144,13 @@ namespace yunomi {
       l2 = l1*l1;
 		}
 
-		size_t count_bitssize(T *data, size_t size){
+		size_t count_bitssize(value_reader<T> &vr){
+			size_t size = vr.size();
 			size_t bitssize=0;
 			for(size_t i = 0; i < size; i++){
-				bitssize+=fc->get_bitsize(data[i]);
+				bitssize+=fc->get_bitsize(vr.pop_front());
 			}
+			vr.move_head();
 			return bitssize;
 		}
 

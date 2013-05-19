@@ -1,5 +1,6 @@
 #include<vector>
 #include<fib_array.h>
+#include<array_value_reader.h>
 
 int main(int argc, char **argv){
 	char *filename=NULL;
@@ -13,7 +14,8 @@ int main(int argc, char **argv){
 		vec.push_back(i+1);
 	}
 
-	yunomi::fib_array<uint32_t> fibarray(&(vec[0]), vec.size());
+	yunomi::array_value_reader<uint32_t> avr(vec);
+	yunomi::fib_array<uint32_t> fibarray(avr);
 
 	std::cerr << "Verifying..." << std::endl;
 	for(size_t i = 0; i < 5000000; i++){

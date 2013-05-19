@@ -1,6 +1,7 @@
 #include<vector>
 #include<fstream>
 #include<fib_array.h>
+#include<array_value_reader.h>
 
 int main(int argc, char **argv){
 	char *input=NULL;
@@ -25,7 +26,8 @@ int main(int argc, char **argv){
 		ifs >> value;
 	}
 
-	yunomi::fib_array<uint32_t> fibarray(&(vec[0]), vec.size());
+	yunomi::array_value_reader<uint32_t> avr(vec);
+	yunomi::fib_array<uint32_t> fibarray(avr);
 
 	std::cerr << "Verifying..." << std::endl;
 	for(size_t i = 0; i < vec.size(); i++){
