@@ -14,76 +14,70 @@ namespace yunomi {
 			fc = new fib_coder<T>();
 
 			size_t size = vr.size();
-			size_t bitssize = count_bitssize(vr);
+			size_t bitssize = count_bitssize(vr); vr.move_head();
+			size_t maxdiff=get_maxdiff(vr); vr.move_head();
 
-			size_t select_unit_size = ceil(log2(bitssize));
-			bitarray *select = new bitarray(size*select_unit_size);
+			bits = new bitarray(bitssize);
 
-			init(bitssize);
-			
-			plsize = (size+l1-1)/l1;
-			pl_unit_size = ceil(log2(bitssize));
-
-			pl = new bitarray(plsize*pl_unit_size);
+			prepare_selectdic(size, bitssize, maxdiff);
 
 			size_t current=0;
-			size_t block_head=0;
-			uint64_t maxdiff=0;
-			for(size_t i = 0; i < size; i++){
-				uint64_t code=0;
-				size_t bitsize=0;
+			size_t current_block=0;
+			size_t pre_block=0;
+			uint64_t code=0;
+			size_t bitsize=0;
+			uint64_t *select = new uint64_t[l1];
 
-				fc->encode(vr.pop_front(), code, bitsize);
-				bits->push_back(code,bitsize);
-				select->push_back(current, select_unit_size);
-				if(i%l1==0){
-					pl->push_back(current, pl_unit_size);
-					block_head=current;
-				}else{
-					if(current-block_head>maxdiff){
-						maxdiff = current-block_head;
+			for(size_t i = 0; i < size;){
+				size_t blockid=i/l1;
+				size_t pre_blockid=blockid-1;
+
+				pre_block=current_block;
+				current_block = current;
+
+				pl->push_back(current, pl_unit_size);
+
+				for(size_t j=pre_blockid*l1; blockid>0 && j<i; j++){
+					uint64_t diff = select[j-pre_blockid*l1];
+					if(current_block-pre_block>l2){
+						sl->push_back(diff, sl_unit_size);
+						if(j%l3==0) ss->push_back(0, ss_unit_size);
+					}else{
+						sl->push_back(0, sl_unit_size);
+						if(j%l3==0) ss->push_back(diff, ss_unit_size);
 					}
 				}
 
-				current+=bitsize;
-			}
-			vr.move_head();
+				for(; i < (blockid+1)*l1 && i < size; i++){
+					fc->encode(vr.pop_front(), code, bitsize);
+					bits->push_back(code, bitsize);
+					select[i-blockid*l1] = current-current_block;
 
-			sl_unit_size=ceil(log2(maxdiff));
-			sl = new bitarray(sl_unit_size*size);
-
-			ss_unit_size=ceil(log2(l2));
-			size_t sssize = size/l3;
-			ss = new bitarray(ss_unit_size*sssize);
-
-			for(size_t blockid=0; blockid < plsize; blockid++){
-				size_t current_block = select->get(blockid*l1*select_unit_size, select_unit_size);
-				size_t post_block;
-				if(blockid+1<plsize){
-					post_block = select->get((blockid+1)*l1*select_unit_size, select_unit_size);
-				}else{
-					post_block = bits->size();
-				}
-				if(post_block - current_block>l2){
-					for(size_t i=blockid*l1+1; i < (blockid+1)*l1 && i < size; i++){
-						size_t i_th = select->get(i*select_unit_size, select_unit_size);
-						sl->push_back(i_th-current_block, sl_unit_size);
-					}
-				}else{
-					size_t sstart = blockid*l1;
-					while(sstart%l3!=0) sstart++;
-					for(size_t i=sstart; i < (blockid+1)*l1 && i < size; i+=l3){
-						size_t i_th = select->get(i*select_unit_size, select_unit_size);
-						ss->push_back(i_th-current_block, ss_unit_size);
-					}
+					current += bitsize;
 				}
 			}
+			size_t blockid=(size-1)/l1;
+			size_t pre_blockid=blockid-1;
+
+			pre_block=current_block;
+			current_block = current;
+			for(size_t j=pre_blockid*l1; blockid>0 && j<size; j++){
+				uint64_t diff = select[j-pre_blockid*l1];
+				if(current_block-pre_block>l2){
+					sl->push_back(diff, sl_unit_size);
+					if(j%l3==0) ss->push_back(0, ss_unit_size);
+				}else{
+					sl->push_back(0, sl_unit_size);
+					if(j%l3==0) ss->push_back(diff, ss_unit_size);
+				}
+			}
+
+			delete [] select;
+
 			bits->pack();
 			pl->pack();
 			sl->pack();
 			ss->pack();
-
-			delete select;
 		}
 
 		fib_array(FILE *fp){
@@ -105,6 +99,10 @@ namespace yunomi {
 		T operator[](size_t i){
 			size_t start = select(i);
 			size_t end = select(i+1)-1;
+
+#ifdef YUNOMI_DEBUG
+			std::cerr << "[" << i << "] (start,end)=(" << start << "," << end << ")" << std::endl;
+#endif
 			size_t size=end-start+1;
 			
 			uint64_t fibcode=bits->get(start,size);
@@ -136,12 +134,25 @@ namespace yunomi {
 		}
 
 	private:
-		void init(size_t bitssize){
-			bits = new bitarray(bitssize);
+		size_t get_maxdiff(value_reader<T> &vr){
+			size_t size = vr.size();
+			size_t current=0;
+			size_t block_head=0;
+			uint64_t maxdiff=0;
+			for(size_t i = 0; i < size; i++){
+				size_t bitsize=fc->get_bitsize(vr.pop_front());
+				if(i%l1==0){
+					block_head=current;
+				}else{
+					if(current-block_head>maxdiff){
+						maxdiff = current-block_head;
+					}
+				}
 
-      l3 = ceil(log2(bitssize+1));
-      l1 = l3*l3;
-      l2 = l1*l1;
+				current+=bitsize;
+			}
+
+			return maxdiff;
 		}
 
 		size_t count_bitssize(value_reader<T> &vr){
@@ -150,8 +161,26 @@ namespace yunomi {
 			for(size_t i = 0; i < size; i++){
 				bitssize+=fc->get_bitsize(vr.pop_front());
 			}
-			vr.move_head();
+
 			return bitssize;
+		}
+
+		void prepare_selectdic(size_t vrsize, size_t bitssize, size_t maxdiff){
+      l3 = ceil(log2(bitssize+1));
+      l1 = l3*l3;
+      l2 = l1*l1;
+
+			plsize = (vrsize+l1-1)/l1;
+			pl_unit_size = ceil(log2(bitssize));
+
+			pl = new bitarray(plsize*pl_unit_size);
+
+			sl_unit_size=ceil(log2(maxdiff));
+			sl = new bitarray(sl_unit_size*vrsize);
+
+			ss_unit_size=ceil(log2(l2));
+			size_t sssize = vrsize/l3;
+			ss = new bitarray(ss_unit_size*sssize);
 		}
 
 		size_t select(size_t i){
@@ -179,6 +208,9 @@ namespace yunomi {
 					sstart = pl_current + ss->get(ss_pos*ss_unit_size, ss_unit_size);
 				}
 				uint64_t current = ss_pos*l3;
+#ifdef YUNOMI_DEBUG
+				std::cerr << "ss_pos=" << ss_pos << " pl_current=" << pl_current << " sstart=" << sstart << " current=" << current << std::endl;
+#endif
 				
 				if(current==i){
 					return sstart;
