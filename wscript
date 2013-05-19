@@ -22,6 +22,7 @@ def build(bld):
 	compress_by_fibarray = bld.program(source='src/compress_by_fibarray.cpp', target='compress_by_fibarray')
 	compress_by_fibarray.includes=['include']
 	compress_by_fibarray.cxxflags=['-O3']
+	#compress_by_fibarray.cxxflags=['-g']
 
 	read_by_fibarray = bld.program(source='src/read_by_fibarray.cpp', target='read_by_fibarray')
 	read_by_fibarray.includes=['include']

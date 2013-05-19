@@ -29,16 +29,16 @@ int main(int argc, char **argv){
 	yunomi::fib_array<uint32_t> fibarray(fp);
 	std::fclose(fp);
 
-	std::cerr << "Verifying..." << std::endl;
+	std::cerr << "Verifying...";
 	for(size_t i = 0; i < vec.size(); i++){
 		uint32_t result = fibarray[i];
 		if(result!=vec[i]){
+			std::cerr << std::endl;
 			std::cerr << "ERROR: value does not match! i=" << i << " original=" << vec[i] << " fibarray=" << result << std::endl;
 			throw "error.";
 		}
 	}
 	std::cerr << "Done!" << std::endl;
-
 
 	return 0;
 }

@@ -1,7 +1,9 @@
 #ifndef YUNOMI_ARRAY_VALUE_READER_H_
 #define YUNOMI_ARRAY_VALUE_READER_H_
 
+#include<vector>
 #include"value_reader.h"
+
 namespace yunomi{
 	template <class T>
 	class array_value_reader : public value_reader<T>{

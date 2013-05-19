@@ -29,4 +29,18 @@ wafのビルド定義を付属しています。
 コードはすべてヘッダに記載されています。includeディレクトリをヘッダの探索パスに追加してください。
 ライブラリの使い方はサンプルコードを参照してください。
 
+## サンプルコードの使い方
+### サンプルデータ
+サンプル用に夏目漱石著「こころ」を単語IDに変換したデータを添付しています。
+
+* tests/sample/kokoro.wordid.txt : 本文データ
+* tests/sample/kokoro.dic.txt : 単語IDと単語の対応ファイル
+
+### サンプルデータの圧縮
+以下のコマンドで圧縮します。
+> bin/compress_by_fibarray tests/data/kokoro.wordid.txt output.dump
+
+以下のコマンドで圧縮データの中身が壊れていないことを確認します。
+> root/bin/read_by_fibarray output.dump tests/data/kokoro.wordid.txt
+
 以上

@@ -1,7 +1,7 @@
 #include<vector>
 #include<fstream>
 #include<fib_array.h>
-#include<array_value_reader.h>
+#include<file_value_reader.h>
 
 int main(int argc, char **argv){
 	char *input=NULL;
@@ -14,32 +14,12 @@ int main(int argc, char **argv){
 		exit(1);
 	}
 
-	std::cerr << "Start building yunomi::fib_array" << std::endl;
-	std::ifstream ifs(input);
-	std::vector<uint32_t> vec;
+	std::cerr << "Building yunomi::fib_array" << std::endl;
+	std::string inputfile = input;
+	yunomi::file_value_reader<uint32_t> fvr(inputfile);
+	yunomi::fib_array<uint32_t> fibarray(fvr);
 
-	uint32_t value=0;
-	
-	ifs >> value;
-	while(!ifs.eof()){
-		vec.push_back(value);
-		ifs >> value;
-	}
-
-	yunomi::array_value_reader<uint32_t> avr(vec);
-	yunomi::fib_array<uint32_t> fibarray(avr);
-
-	std::cerr << "Verifying..." << std::endl;
-	for(size_t i = 0; i < vec.size(); i++){
-		uint32_t result = fibarray[i];
-		if(result!=vec[i]){
-			std::cerr << "ERROR: value does not match! i=" << i << " original=" << vec[i] << " fibarray=" << result << std::endl;
-			throw "error.";
-		}
-	}
-	std::cerr << "Done!" << std::endl;
-
-	std::cerr << "Dumping..." << std::endl;
+	std::cerr << "Dumping" << std::endl;
 	FILE *fp = std::fopen(output,"wb");
 	fibarray.dump(fp);
 	std::fclose(fp);
