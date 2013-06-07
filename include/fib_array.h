@@ -73,9 +73,7 @@ namespace yunomi {
 				uint64_t diff = select[j-pre_blockid*l1];
 				if(current_block-pre_block>l2){
 					if(j%l1!=0) sl->push_back(diff, sl_unit_size);
-					//if(j%l3==0) ss->push_back(0, ss_unit_size);
 				}else{
-					//if(j%l1!=0) sl->push_back(0, sl_unit_size);
 					if(j%l3==0) ss->push_back(diff, ss_unit_size);
 				}
 			}
