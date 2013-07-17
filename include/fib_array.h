@@ -18,13 +18,15 @@ namespace yunomi {
 			fc = new fib_coder<T>();
 
 			size_t size = vr.size();
-			size_t bitssize = count_bitssize(vr); vr.move_head();
+			size_t bitssize = count_bitssize(vr);
+			vr.move_head();
 
-      l3 = ceil(log2(bitssize+1))*L3_WEIGHT;
-      l1 = l3*l3*L1_WEIGHT;
-      l2 = l1*l1*L2_WEIGHT;
+      l3 = (uint64_t) (ceil(log2(bitssize+1))*L3_WEIGHT);
+      l1 = (uint64_t) (l3*l3*L1_WEIGHT);
+      l2 = (uint64_t) (l1*l1*L2_WEIGHT);
 
-			size_t maxdiff=get_maxdiff(vr); vr.move_head();
+			size_t maxdiff=get_maxdiff(vr);
+			vr.move_head();
 
 			bits = new bitarray(bitssize);
 
@@ -35,26 +37,37 @@ namespace yunomi {
 			size_t pre_block=0;
 			uint64_t code=0;
 			size_t bitsize=0;
-			uint64_t *select = new uint64_t[l1];
+			uint64_t *select=new uint64_t[l1];
+			size_t sl_counter=0;
+			size_t ss_counter=0;
 
+			p->push_back(0, p_unit_size);
 			for(size_t i = 0; i < size;){
 				size_t blockid=i/l1;
 				size_t pre_blockid=blockid-1;
 
 				pre_block=current_block;
 				current_block = current;
-
+				
 				pl->push_back(current, pl_unit_size);
-
-				for(size_t j=pre_blockid*l1; blockid>0 && j<i; j++){
-					uint64_t diff = select[j-pre_blockid*l1];
-					if(current_block-pre_block>l2){
-						if(j%l1!=0) sl->push_back(diff, sl_unit_size);
-						if(j%l3==0) ss->push_back(0, ss_unit_size);
-					}else{
-						if(j%l1!=0) sl->push_back(0, sl_unit_size);
-						if(j%l3==0) ss->push_back(diff, ss_unit_size);
+				if(current_block-pre_block>l2){
+					for(size_t j=pre_blockid*l1; blockid>0 && j<i; j++){
+						uint64_t diff = select[j-pre_blockid*l1];
+						if(j%l1!=0){
+							sl->push_back(diff, sl_unit_size);
+							sl_counter++;
+						}
 					}
+					if(blockid!=0) p->push_back(sl_counter, p_unit_size);
+				}else{
+					for(size_t j=pre_blockid*l1; blockid>0 && j<i; j++){
+						uint64_t diff = select[j-pre_blockid*l1];
+						if(j%l3==0){
+							ss->push_back(diff, ss_unit_size);
+							ss_counter++;
+						}
+					}
+					if(blockid!=0) p->push_back(ss_counter, p_unit_size);
 				}
 
 				for(; i < (blockid+1)*l1 && i < size; i++){
@@ -69,12 +82,23 @@ namespace yunomi {
 
 			pre_block=current_block;
 			current_block = current;
-			for(size_t j=pre_blockid*l1; pre_blockid>=0 && j<size; j++){
-				uint64_t diff = select[j-pre_blockid*l1];
-				if(current_block-pre_block>l2){
-					if(j%l1!=0) sl->push_back(diff, sl_unit_size);
-				}else{
-					if(j%l3==0) ss->push_back(diff, ss_unit_size);
+			if(current_block-pre_block>l2){
+				p->push_back(sl_counter, p_unit_size);
+				for(size_t j=pre_blockid*l1; pre_blockid>=0 && j<size; j++){
+					uint64_t diff = select[j-pre_blockid*l1];
+					if(j%l1!=0){
+						sl->push_back(diff, sl_unit_size);
+						sl_counter++;
+					}
+				}
+			}else{
+				p->push_back(ss_counter, p_unit_size);
+				for(size_t j=pre_blockid*l1; pre_blockid>=0 && j<size; j++){
+					uint64_t diff = select[j-pre_blockid*l1];
+					if(j%l3==0){
+						ss->push_back(diff, ss_unit_size);
+						ss_counter++;
+					}
 				}
 			}
 
@@ -84,6 +108,7 @@ namespace yunomi {
 			pl->pack();
 			sl->pack();
 			ss->pack();
+			p->pack();
 		}
 
 		fib_array(FILE *fp){
@@ -91,6 +116,7 @@ namespace yunomi {
 			fread(&pl_unit_size, sizeof(size_t), 1, fp);
 			fread(&sl_unit_size, sizeof(size_t), 1, fp);
 			fread(&ss_unit_size, sizeof(size_t), 1, fp);
+			fread(&p_unit_size, sizeof(size_t), 1, fp);
 			fread(&l1, sizeof(uint64_t), 1, fp);
 			fread(&l2, sizeof(uint64_t), 1, fp);
 			fread(&l3, sizeof(uint64_t), 1, fp);
@@ -100,6 +126,7 @@ namespace yunomi {
 			pl = new bitarray(fp);
 			sl = new bitarray(fp);
 			ss = new bitarray(fp);
+			p = new bitarray(fp);
 		}
 
 		T operator[](size_t i){
@@ -121,6 +148,7 @@ namespace yunomi {
 			delete pl;
 			delete sl;
 			delete ss;
+			delete p;
 		}
 
 		void dump(FILE *fp){
@@ -128,6 +156,7 @@ namespace yunomi {
 			fwrite(&pl_unit_size, sizeof(size_t), 1, fp);
 			fwrite(&sl_unit_size, sizeof(size_t), 1, fp);
 			fwrite(&ss_unit_size, sizeof(size_t), 1, fp);
+			fwrite(&p_unit_size, sizeof(size_t), 1, fp);
 			fwrite(&l1, sizeof(uint64_t), 1, fp);
 			fwrite(&l2, sizeof(uint64_t), 1, fp);
 			fwrite(&l3, sizeof(uint64_t), 1, fp);
@@ -137,6 +166,7 @@ namespace yunomi {
 			pl->dump(fp);
 			sl->dump(fp);
 			ss->dump(fp);
+			p->dump(fp);
 		}
 
 	private:
@@ -174,16 +204,20 @@ namespace yunomi {
 
 		void prepare_selectdic(size_t vrsize, size_t bitssize, size_t maxdiff){
 			plsize = (vrsize+l1-1)/l1;
-			pl_unit_size = ceil(log2(bitssize));
+			pl_unit_size = (size_t) ceil(log2(bitssize));
 
 			pl = new bitarray(plsize*pl_unit_size);
 
-			sl_unit_size=ceil(log2(maxdiff));
+			sl_unit_size = (size_t) ceil(log2(maxdiff));
 			sl = new bitarray(sl_unit_size*vrsize);
 
-			ss_unit_size=ceil(log2(l2));
+			ss_unit_size = (size_t) ceil(log2(l2));
 			size_t sssize = vrsize/l3;
 			ss = new bitarray(ss_unit_size*sssize);
+
+			size_t p_max = (vrsize>sssize)?vrsize:sssize;
+			p_unit_size = (size_t) ceil(log2(p_max));
+			p = new bitarray(p_max*p_unit_size);
 		}
 
 		size_t select(size_t i){
@@ -205,7 +239,8 @@ namespace yunomi {
 				if(i%l1==0){
 					return pl_current;
 				}else{
-					return pl_current+sl->get((i-blockid-1)*sl_unit_size,sl_unit_size);
+					size_t sl_idx = p->get(blockid*p_unit_size, p_unit_size);
+					return pl_current+sl->get((sl_idx+(i-blockid*l1-1))*sl_unit_size,sl_unit_size);
 				}
 			}else{
 				size_t ss_pos=i/l3;
@@ -213,7 +248,8 @@ namespace yunomi {
 				if(i%(l3*l1)==0){
 					sstart = pl_current;
 				}else{
-					sstart = pl_current + ss->get(ss_pos*ss_unit_size, ss_unit_size);
+					size_t ss_idx = p->get(blockid*p_unit_size, p_unit_size);
+					sstart = pl_current + ss->get((ss_idx+(ss_pos-blockid*l1/l3-1))*ss_unit_size, ss_unit_size);
 				}
 				uint64_t current = ss_pos*l3;
 #ifdef YUNOMI_DEBUG
@@ -249,6 +285,7 @@ namespace yunomi {
 		size_t pl_unit_size;
 		size_t sl_unit_size;
 		size_t ss_unit_size;
+		size_t p_unit_size;
 
     uint64_t l1;
     uint64_t l2;
@@ -257,6 +294,7 @@ namespace yunomi {
     bitarray *pl;
     bitarray *sl;
     bitarray *ss;
+		bitarray *p;
 
 		fib_coder<T> *fc;
 	};

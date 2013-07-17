@@ -11,7 +11,7 @@ int main(int argc, char **argv){
 	std::cerr << "Start building yunomi::bitarray" << std::endl;
 	yunomi::bitarray vec(1000);
 	for(size_t i = 1; i < 1000; i++){
-		size_t bits = ceil(log2(i+1));
+		size_t bits = (size_t) ceil(log2(i+1));
 		vec.push_back(i, bits);
 	}
 	std::cerr << "Packing..." << std::endl;
@@ -23,7 +23,7 @@ int main(int argc, char **argv){
 	std::cerr << "Verifying..." << std::endl;
 	size_t tail=0;
 	for(size_t i = 1; i < 1000; i++){
-		size_t bits = ceil(log2(i+1));
+		size_t bits = (size_t) ceil(log2(i+1));
 		uint64_t result = vec.get(tail,bits);
 		if(result!=i){
 			std::cerr << "ERROR: value does not match! original=" << i << " return=" << result << std::endl;

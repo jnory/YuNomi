@@ -43,6 +43,6 @@ wafのビルド定義を付属しています。
 > bin/compress_by_fibarray samples/kokoro/kokoro.wordid.txt output.dump
 
 以下のコマンドで圧縮データの中身が壊れていないことを確認します。
-> root/bin/read_from_fibarray output.dump samples/kokoro/kokoro.wordid.txt
+> bin/read_from_fibarray output.dump samples/kokoro/kokoro.wordid.txt
 
 以上
