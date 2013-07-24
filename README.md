@@ -19,8 +19,9 @@ darrayは以下の論文に記載されています。
 また、効率的な探索のため、下記論文/書籍の手法を採用しています。
 * Sebastiano Vigna. 2008. Broadword implementation of rank/select queries. In Proc. of the 7th international conference on Experimental algorithms (WEA'08). Springer-Verlag. <http://dl.acm.org/citation.cfm?id=1788900>
 ** popcountの実装はこの論文に従いました。
-* ヘンリー・S・ウォーレン、ジュニア "ハッカーのたのしみ".
-** ビット列から11の並びを見つける手法はこの書籍(2-1節)に従いました。
+* ヘンリー・S・ウォーレン、ジュニア "ハッカーのたのしみ" 2-1節
+** ビット列から11の並びを見つける手法はこの書籍を参考にしました。
+** ビットマスクを作成する方法はこの書籍を参考にしました。
 
 ## インストール
 wafのビルド定義を付属しています。
@@ -47,3 +48,4 @@ wafのビルド定義を付属しています。
 > bin/read_from_fibarray output.dump samples/kokoro/kokoro.wordid.txt
 
 以上
+
