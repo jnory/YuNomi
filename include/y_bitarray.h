@@ -8,7 +8,8 @@ namespace yunomi{
 	class bitarray{
 	public:
 		bitarray(size_t bitsize):bitsize(bitsize), tail(0){
-			size_t bitssize = (bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t bitssize = ((bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS)+1;
+			bitssize++;
 			bits = new uint64_t[bitssize];
 			memset(bits, 0, sizeof(uint64_t)*bitssize);
 		}
@@ -16,7 +17,7 @@ namespace yunomi{
 		bitarray(FILE *fp){
 			fread(&bitsize, sizeof(size_t), 1, fp);
 			fread(&tail, sizeof(size_t), 1, fp);
-			size_t bitssize = (bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t bitssize = ((bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS)+1;
 			bits = new uint64_t[bitssize];
 			fread(bits, sizeof(uint64_t), bitssize, fp);
 		}
@@ -34,7 +35,7 @@ namespace yunomi{
 			uint64_t ret=0;
 			ret = bits[start_index]>>start_bit;
 			if(start_index==end_index){
-				ret &= ((0x1ULL<<size)-1);
+				ret &= (0x1ULL<<(size-1))|((0x1ULL<<(size-1))-1);
 			}else{
 				ret |= (bits[end_index]&((0x1ULL<<(end_bit+1))-1))<<(UINT64_T_SIZE-start_bit);
 			}
@@ -62,7 +63,7 @@ namespace yunomi{
 		void pack(){
 			if(tail < bitsize){
 				size_t new_bitsize = tail;
-				size_t new_bitssize = (new_bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+				size_t new_bitssize = ((new_bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS)+1;
 				uint64_t *new_bits = new uint64_t[new_bitssize];
 				memcpy(new_bits, bits, sizeof(uint64_t)*new_bitssize);
 				
@@ -84,7 +85,7 @@ namespace yunomi{
 		void dump(FILE *fp){
 			fwrite(&bitsize, sizeof(size_t), 1, fp);
 			fwrite(&tail, sizeof(size_t), 1, fp);
-			size_t bitssize = (bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t bitssize = ((bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS)+1;
 			fwrite(bits, sizeof(uint64_t), bitssize, fp);
 		}
 
@@ -94,10 +95,10 @@ namespace yunomi{
 
 	private:
 		void expand(){
-			size_t bitssize = (bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t bitssize = ((bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS)+1;
 
 			size_t new_bitsize = bitsize*2;
-			size_t new_bitssize = (new_bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t new_bitssize = ((new_bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS)+1;
 			uint64_t *new_bits = new uint64_t[new_bitssize];
 			memcpy(new_bits, bits, sizeof(uint64_t)*bitssize);
 			memset(new_bits+bitssize, 0, sizeof(uint64_t)*(new_bitssize-bitssize));

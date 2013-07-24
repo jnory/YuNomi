@@ -7,5 +7,9 @@
 #define UINT64_T_SIZE_BITS 6
 #define UINT64_T_SIZE_MASK 0x3FULL
 
+#define L1_WEIGHT 1.0
+#define L2_WEIGHT 0.1
+#define L3_WEIGHT 1.0
+
 #endif //YUNOMI_DEFINES_H_
 

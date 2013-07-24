@@ -13,13 +13,14 @@
 
 内部で作成しているselect辞書は、darrayを採用しました。
 darrayは以下の論文に記載されています。
-* "Practical Entropy-Compressed Rank/Select Dictionary.", Daisuke Okanohara and Kunihiko Sadakane. In the Proc. of ALENEX 2007. <http://hillbig.cocolog-nifty.com/do/2006/12/bit_arrayrankse_036c.html>
-※現時点での実装には誤り(というかバグ)があるようです。早めに直します…
+* Daisuke Okanohara and Kunihiko Sadakane. 2007. "Practical Entropy-Compressed Rank/Select Dictionary.", In the Proc. of ALENEX. <http://hillbig.cocolog-nifty.com/do/2006/12/bit_arrayrankse_036c.html>
+* 定兼邦彦. 2006. 単純なRank/Select辞書. 電子情報通信学会技術研究報告. COMP. 一般社団法人電子情報通信学会 <http://ci.nii.ac.jp/naid/110004751008/>
 
-## 実装されていないもの（実装するつもりのもの）
-darrayの内部で線形探索する際に、以下の論文に従えば高速化できるはずですが、まだ実装できていません。（現時点ではシンプルに線形探索しているため重いです。）
-
+また、効率的な探索のため、下記論文/書籍の手法を採用しています。
 * Sebastiano Vigna. 2008. Broadword implementation of rank/select queries. In Proc. of the 7th international conference on Experimental algorithms (WEA'08). Springer-Verlag. <http://dl.acm.org/citation.cfm?id=1788900>
+** popcountの実装はこの論文に従いました。
+* ヘンリー・S・ウォーレン、ジュニア "ハッカーのたのしみ".
+** ビット列から11の並びを見つける手法はこの書籍(2-1節)に従いました。
 
 ## インストール
 wafのビルド定義を付属しています。
