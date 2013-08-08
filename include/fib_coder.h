@@ -46,15 +46,14 @@ namespace yunomi {
 		}
 
 		T decode(uint64_t code, size_t bitsize){
-			//std::cerr << "code=" << code << std::endl;
 			T ret=0;
-			for(size_t i = 0; i < bitsize-1; i++){
-				uint64_t bit = code&0x1ULL;
-				code>>=1;
-				if(bit==0x1ULL){
-					ret += fibs[i+1];
-					code>>=1;
+			for(size_t i = 1; i < bitsize; i++){
+				if(code&0x1ULL==0x1ULL){
+					ret += fibs[i];
+					code>>=2;
 					i++;
+				}else{
+					code>>=1;
 				}
 			}
 			return ret;

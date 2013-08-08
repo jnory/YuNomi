@@ -42,4 +42,5 @@ def build(bld):
 	read_from_fibarray.cxxflags=['-O3']
 	#read_from_fibarray.cxxflags=['-g', '-DYUNOMI_DEBUG']
 	
-	bld.install_files('${PREFIX}/include', ['include/fib_array.h', 'include/fib_coder.h', 'include/y_bitarray.h', 'include/y_defines.h', 'include/array_value_reader.h', 'include/file_value_reader.h', 'include/value_reader.h', 'include/gjc_array.h'])
+	bld.install_files('${PREFIX}/include', ['include/fib_array.h', 'include/fib_coder.h', 'include/y_bitarray.h', 'include/y_defines.h', 'include/array_value_reader.h', 'include/file_value_reader.h', 'include/value_reader.h', 'include/gjc_array.h', 'include/y_select11.h'])
+

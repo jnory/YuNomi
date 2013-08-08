@@ -167,7 +167,7 @@ namespace yunomi {
 		}
 
 	private:
-		size_t set_ls(){
+		void set_ls(){
 			l3 = (uint64_t) (ceil(log2(bits->size()+1))*L3_WEIGHT);
       l1 = (uint64_t) (l3*l3*L1_WEIGHT);
       l2 = (uint64_t) (l1*l1*L2_WEIGHT);
@@ -178,9 +178,11 @@ namespace yunomi {
 		}
 		
 		size_t next11(size_t begin){
+			size_t bitsize = 64;
 			if(begin>=bits->size()) return -1;
+			if(begin+63>=bits->size()) bitsize = bits->size()-begin+1;
 			
-			uint64_t bs = bits->get(begin,64);
+			uint64_t bs = bits->get(begin,bitsize);
 
 #ifdef YUNOMI_DEBUG
 			std::cerr << "ORIGINAL:" << std::hex << bs << std::dec << std::endl;
@@ -226,6 +228,7 @@ namespace yunomi {
 				}
 				pre_pos = pos;
 				count++;
+				if(pos>=bits->size()) break;
 			}
 			
 			return count;
