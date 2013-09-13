@@ -29,15 +29,12 @@ namespace yunomi {
 				
 				if(pos==(size_t)-1) break;
 				pos-=2;
-				//std::cerr << "pos=" << pos << std::endl;
 				size_t large_block_id = pos / l1;
 				if(large_block_id != pre_large_block_id){
 					while(pl_insert_num < large_block_id){
-						//std::cerr << "+ counter=" << counter << std::endl;
 						pl->push_back(counter, pl_unit_size);
 						pl_insert_num++;
 					}
-					//std::cerr << "# counter=" << counter << std::endl;
 					pl->push_back(counter, pl_unit_size);
 					pl_insert_num++;
 				}
@@ -45,7 +42,6 @@ namespace yunomi {
 				size_t small_block_id = pos / l2;
 				if(small_block_id != pre_small_block_id){
 					while(sl_insert_num < small_block_id){
-						//std::cerr << "* counter=" << counter << std::endl;
 						size_t lidx = sl_insert_num*l2/l1;
 						sl->push_back(counter-pl->get(lidx*pl_unit_size, pl_unit_size), sl_unit_size);
 						if(pre_pos+1==sl_insert_num*l2){
@@ -55,7 +51,6 @@ namespace yunomi {
 						}
 						sl_insert_num++;
 					}
-					//std::cerr << "@ counter=" << counter << std::endl;
 					size_t lidx = sl_insert_num*l2/l1;
 					sl->push_back(counter-pl->get(lidx*pl_unit_size, pl_unit_size), sl_unit_size);
 					if(pre_pos+1==sl_insert_num*l2){
@@ -93,47 +88,56 @@ namespace yunomi {
 						break;
 					}
 				}
-				//std::cerr << "i="<<i << " => " << count << std::endl;
-				p->push_back(count, p_unit_size);
+				p[i] = count;
 			}
 			
 			bits->pack();
 			pl->pack();
 			sl->pack();
-			p->pack();
 			sf->pack();
 		}
 		
+		
 		rank11(FILE *fp, bitarray *bits) : bits(bits){
 			fread(&plsize, sizeof(size_t), 1, fp);
+			fread(&slsize, sizeof(size_t), 1, fp);
+			fread(&psize, sizeof(size_t), 1, fp);
+
 			fread(&pl_unit_size, sizeof(size_t), 1, fp);
 			fread(&sl_unit_size, sizeof(size_t), 1, fp);
-			fread(&p_unit_size, sizeof(size_t), 1, fp);
+			
 			fread(&l1, sizeof(uint64_t), 1, fp);
 			fread(&l2, sizeof(uint64_t), 1, fp);
 			
 			pl = new bitarray(fp);
 			sl = new bitarray(fp);
-			p = new bitarray(fp);
+			sf = new bitarray(fp);
+			p = new uint32_t[psize];
+			fread(p, sizeof(uint32_t), psize, fp);
 		}
 		
 		virtual ~rank11(){
 			delete pl;
 			delete sl;
-			delete p;
+			delete sf;
+			delete [] p;
 		}
 		
 		void dump(FILE *fp){
 			fwrite(&plsize, sizeof(size_t), 1, fp);
+			fwrite(&slsize, sizeof(size_t), 1, fp);
+			fwrite(&psize, sizeof(size_t), 1, fp);
+
 			fwrite(&pl_unit_size, sizeof(size_t), 1, fp);
 			fwrite(&sl_unit_size, sizeof(size_t), 1, fp);
-			fwrite(&p_unit_size, sizeof(size_t), 1, fp);
+			
 			fwrite(&l1, sizeof(uint64_t), 1, fp);
 			fwrite(&l2, sizeof(uint64_t), 1, fp);
 
 			pl->dump(fp);
 			sl->dump(fp);
-			p->dump(fp);
+			sf->dump(fp);
+			fwrite(p, sizeof(uint32_t), psize, fp);
 		}
 		
 		size_t rank(size_t i){
@@ -148,7 +152,7 @@ namespace yunomi {
 			if(small_block_pos!=0){
 				uint64_t b = bits->get(small_block_id*l2, small_block_pos+1);
 				uint64_t flg = ~sf->getbit(small_block_id);
-				r += p->get((b&flg)*p_unit_size, p_unit_size);
+				r += p[b&flg];
 			}
 			return r;
 		}
@@ -201,9 +205,8 @@ namespace yunomi {
 			sl_unit_size = (size_t) ceil(log2(maxdiff));
 			sl = new bitarray(slsize*sl_unit_size);
 
-			p_unit_size = l2;
-			psize = (size_t) pow(2, p_unit_size);
-			p = new bitarray(psize*p_unit_size);
+			psize = (size_t) pow(2, l2);
+			p = new uint32_t[psize];
 			
 			sf = new bitarray(slsize);
 		}
@@ -216,15 +219,15 @@ namespace yunomi {
 
 		size_t pl_unit_size;
 		size_t sl_unit_size;
-		size_t p_unit_size;
 
     uint64_t l1;
     uint64_t l2;
 
     bitarray *pl;
     bitarray *sl;
-		bitarray *p;
 		bitarray *sf;
+		
+		uint32_t *p;
 	};
 }
 
