@@ -8,7 +8,7 @@ namespace yunomi{
 	class bitarray{
 	public:
 		bitarray(size_t bitsize):bitsize(bitsize), tail(0){
-			size_t bitssize = (bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t bitssize = (bitsize+UINT64_T_SIZE)>>UINT64_T_SIZE_BITS;
 			bitssize++;
 			bits = new uint64_t[bitssize];
 			memset(bits, 0, sizeof(uint64_t)*bitssize);
@@ -17,7 +17,7 @@ namespace yunomi{
 		bitarray(FILE *fp){
 			fread(&bitsize, sizeof(size_t), 1, fp);
 			fread(&tail, sizeof(size_t), 1, fp);
-			size_t bitssize = (bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t bitssize = (bitsize+UINT64_T_SIZE)>>UINT64_T_SIZE_BITS;
 			bits = new uint64_t[bitssize];
 			fread(bits, sizeof(uint64_t), bitssize, fp);
 		}
@@ -42,6 +42,12 @@ namespace yunomi{
 
 			return ret;
 		}
+		
+		uint64_t getbit(size_t position){
+			size_t pos = position>>UINT64_T_SIZE_BITS;
+			size_t bit = position& UINT64_T_SIZE_MASK;
+			return ((bits[pos]>>bit)&0x1ULL);
+		}
 
 		void push_back(uint64_t data, size_t size){
 			if(size==0) return;
@@ -63,7 +69,7 @@ namespace yunomi{
 		void pack(){
 			if(tail < bitsize){
 				size_t new_bitsize = tail;
-				size_t new_bitssize = (new_bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+				size_t new_bitssize = (new_bitsize+UINT64_T_SIZE)>>UINT64_T_SIZE_BITS;
 				uint64_t *new_bits = new uint64_t[new_bitssize];
 				memcpy(new_bits, bits, sizeof(uint64_t)*new_bitssize);
 				
@@ -72,12 +78,51 @@ namespace yunomi{
 				bitsize = new_bitsize;
 			}
 		}
+		
+		size_t next11(size_t begin){
+			size_t bitsize = 64;
+			if(begin>=size()) return -1;
+			if(begin+63>=size()) bitsize = size()-begin+1;
+			
+			uint64_t bs = get(begin,bitsize);
 
+#ifdef YUNOMI_DEBUG
+			std::cerr << "ORIGINAL:" << std::hex << bs << std::dec << std::endl;
+#endif
+
+			// detect the most right "11".
+			// see a book "Hacker's Delight" by Henry S. Warren, Jr. Section 2-1.
+			bs = bs&(bs>>1);
+			bs = (bs|(bs-1))-bs;
+
+#ifdef YUNOMI_DEBUG
+			std::cerr << "MOST-RIGHT:" << std::hex << bs << std::dec << std::endl;
+#endif
+
+			if(bs==0xFFFFFFFFFFFFFFFFULL){
+				return -1;
+			}else{
+				// popcount
+				// see a paper "Broadword Implementation of Rank/Select Queries" by Sebastiano Vigna.
+				bs = bs - ((bs&0xAAAAAAAAAAAAAAAAULL)>>1);
+				bs = (bs&0x3333333333333333ULL) + ((bs >> 2) & 0x3333333333333333ULL);
+				bs = (bs + (bs >> 4))&0x0F0F0F0F0F0F0F0FULL;
+				bs = (bs*0x0101010101010101ULL) >> 56;
+
+#ifdef YUNOMI_DEBUG
+				std::cerr << "COUNT:" << std::hex << bs << std::dec << std::endl;
+#endif
+				return begin+bs+2;
+			}
+		}
+		
 		void inspect(){
 			for(size_t i=0; i < bitsize; i++){
 				size_t pos = i>>UINT64_T_SIZE_BITS;
 				size_t bit = i& UINT64_T_SIZE_MASK;
 				std::cerr << ((bits[pos]>>bit)&0x1ULL);
+				if((i+1)%4 == 0) std::cerr << " ";
+				if((i+1)%32 == 0) std::cerr << std::endl;
 			}
 			std::cerr << std::endl;
 		}
@@ -85,7 +130,7 @@ namespace yunomi{
 		void dump(FILE *fp){
 			fwrite(&bitsize, sizeof(size_t), 1, fp);
 			fwrite(&tail, sizeof(size_t), 1, fp);
-			size_t bitssize = (bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t bitssize = (bitsize+UINT64_T_SIZE)>>UINT64_T_SIZE_BITS;
 			fwrite(bits, sizeof(uint64_t), bitssize, fp);
 		}
 
@@ -95,10 +140,10 @@ namespace yunomi{
 
 	private:
 		void expand(){
-			size_t bitssize = (bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t bitssize = (bitsize+UINT64_T_SIZE)>>UINT64_T_SIZE_BITS;
 
 			size_t new_bitsize = bitsize*2;
-			size_t new_bitssize = (new_bitsize+UINT64_T_SIZE-1)>>UINT64_T_SIZE_BITS;
+			size_t new_bitssize = (new_bitsize+UINT64_T_SIZE)>>UINT64_T_SIZE_BITS;
 			uint64_t *new_bits = new uint64_t[new_bitssize];
 			memcpy(new_bits, bits, sizeof(uint64_t)*bitssize);
 			memset(new_bits+bitssize, 0, sizeof(uint64_t)*(new_bitssize-bitssize));

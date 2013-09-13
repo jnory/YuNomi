@@ -50,7 +50,7 @@ namespace yunomi {
 
 				for(; i < (blockid+1)*l1 && i < size; i++){
 					select[i-blockid*l1] = current-current_block;
-					current = next11(current);
+					current = bits->next11(current);
 				}
 			}
 			size_t pre_blockid=(size-1)/l1;
@@ -159,7 +159,7 @@ namespace yunomi {
 #endif
 				
 				for(; current < i; current++){
-					sstart = next11(sstart);
+					sstart = bits->next11(sstart);
 				}
 
 				return sstart;
@@ -177,49 +177,12 @@ namespace yunomi {
 #endif
 		}
 		
-		size_t next11(size_t begin){
-			size_t bitsize = 64;
-			if(begin>=bits->size()) return -1;
-			if(begin+63>=bits->size()) bitsize = bits->size()-begin+1;
-			
-			uint64_t bs = bits->get(begin,bitsize);
-
-#ifdef YUNOMI_DEBUG
-			std::cerr << "ORIGINAL:" << std::hex << bs << std::dec << std::endl;
-#endif
-
-			// detect most right "11".
-			// see a book "Hacker's Delight" by Henry S. Warren, Jr. Section 2-1.
-			bs = bs&(bs>>1);
-			bs = (bs|(bs-1))-bs;
-
-#ifdef YUNOMI_DEBUG
-			std::cerr << "MOST-RIGHT:" << std::hex << bs << std::dec << std::endl;
-#endif
-
-			if(bs==0xFFFFFFFFFFFFFFFFULL){
-				return -1;
-			}else{
-				// popcount
-				// see a paper "Broadword Implementation of Rank/Select Queries" by Sebastiano Vigna.
-				bs = bs - ((bs&0xAAAAAAAAAAAAAAAAULL)>>1);
-				bs = (bs&0x3333333333333333ULL) + ((bs >> 2) & 0x3333333333333333ULL);
-				bs = (bs + (bs >> 4))&0x0F0F0F0F0F0F0F0FULL;
-				bs = (bs*0x0101010101010101ULL) >> 56;
-
-#ifdef YUNOMI_DEBUG
-				std::cerr << "COUNT:" << std::hex << bs << std::dec << std::endl;
-#endif
-				return begin+bs+2;
-			}
-		}
-	
 		size_t count_elements(size_t &maxdiff){
 			maxdiff=0;
 			size_t count=0;
 			size_t pre_pos=0;
 			while(true){
-				size_t pos=next11(pre_pos);
+				size_t pos=bits->next11(pre_pos);
 				
 				if(pos==(size_t)-1) break;
 				
@@ -244,6 +207,7 @@ namespace yunomi {
 			pl_unit_size = (size_t) ceil(log2(bits->size()));
 			pl = new bitarray(plsize*pl_unit_size);
 
+			//配列数count個は怪しいので要確認
 			sl_unit_size = (size_t) ceil(log2(maxdiff));
 			sl = new bitarray(sl_unit_size*count);
 

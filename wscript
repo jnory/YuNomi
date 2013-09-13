@@ -23,6 +23,7 @@ def build(bld):
 	test_bitarray = bld.program(source='tests/test_y_bitarray.cpp', target='test_y_bitarray')
 	test_bitarray.includes=['include']
 	test_bitarray.cxxflags=['-O3']
+	#test_bitarray.cxxflags=['-g', '-DYUNOMI_DEBUG']
 
 	test_gjc_array = bld.program(source='tests/test_gjc_array.cpp', target='test_gjc_array')
 	test_gjc_array.includes=['include']
