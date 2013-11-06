@@ -49,7 +49,7 @@ namespace yunomi{
 			return ((bits[pos]>>bit)&0x1ULL);
 		}
 
-		void push_back(uint64_t data, size_t size){
+		void push_back(uint64_t data, size_t size, bool flag=false){
 			if(size==0) return;
 			while(tail+size>bitsize){
 				expand();

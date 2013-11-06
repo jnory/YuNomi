@@ -162,8 +162,8 @@ namespace yunomi {
 			size_t l3 = (uint64_t) (ceil(log2(bits->size()+1))*L3_WEIGHT);
       l1 = (uint64_t) (l3*l3*L1_WEIGHT);
       l2 = (uint64_t) (l1/2*L2_WEIGHT);
-      if(l2 > 32) l2 = 32;
-      
+      if(l2 > 10) l2 = 10;
+
 #ifdef YUNOMI_DEBUG
       std::cerr << "l1=" << l1 << " l2=" << l2 << std::endl;
 #endif
