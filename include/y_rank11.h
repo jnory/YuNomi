@@ -44,6 +44,7 @@ namespace yunomi {
 					while(sl_insert_num < small_block_id){
 						size_t lidx = sl_insert_num*l2/l1;
 						sl->push_back(counter-pl->get(lidx*pl_unit_size, pl_unit_size), sl_unit_size);
+						//sl->push_back(counter-pl->get(large_block_id*pl_unit_size, pl_unit_size), sl_unit_size);
 						if(pre_pos+1==sl_insert_num*l2){
 							sf->push_back(1, 1);
 						}else{
@@ -53,6 +54,7 @@ namespace yunomi {
 					}
 					size_t lidx = sl_insert_num*l2/l1;
 					sl->push_back(counter-pl->get(lidx*pl_unit_size, pl_unit_size), sl_unit_size);
+					//sl->push_back(counter-pl->get(large_block_id*pl_unit_size, pl_unit_size), sl_unit_size);
 					if(pre_pos+1==sl_insert_num*l2){
 						sf->push_back(1, 1);
 					}else{
@@ -60,6 +62,9 @@ namespace yunomi {
 					}
 					sl_insert_num++;
 				}
+				//if(pos==861){
+				//	std::cerr << 
+				//}
 				
 				pre_pos = pos;
 				pre_large_block_id = large_block_id;
@@ -141,18 +146,24 @@ namespace yunomi {
 		}
 		
 		size_t rank(size_t i){
-			i--;
-			size_t large_block_id = i / l1;
+			//std::cerr << "******" << i << std::endl;
+			i-=2;
 			size_t small_block_id = i / l2;
+			size_t large_block_id = (small_block_id * l2) / l1;
 			size_t small_block_pos = i % l2;
 
 			size_t r = pl->get(large_block_id*pl_unit_size, pl_unit_size)
 							   + sl->get(small_block_id*sl_unit_size, sl_unit_size);
 			
+			//std::cerr << "large_block_value=" << pl->get(large_block_id*pl_unit_size, pl_unit_size) << std::endl;
+			//std::cerr << "small_block_value=" << sl->get(small_block_id*sl_unit_size, sl_unit_size) << std::endl;
+			//std::cerr << "i=" << (i+2) << " large_block_id=" << large_block_id << " small_block_id=" << small_block_id << " small_block_pos=" << small_block_pos << " r=" << r << std::endl;
 			if(small_block_pos!=0){
 				uint64_t b = bits->get(small_block_id*l2, small_block_pos+1);
 				uint64_t flg = ~sf->getbit(small_block_id);
+				
 				r += p[b&flg];
+				//std::cerr << "b=" << b << " flg=" << flg << " r=" << r << std::endl;
 			}
 			return r;
 		}
