@@ -48,7 +48,7 @@ namespace yunomi {
 		T decode(uint64_t code, size_t bitsize){
 			T ret=0;
 			for(size_t i = 1; i < bitsize; i++){
-				if(code&0x1ULL==0x1ULL){
+				if((code&0x1ULL)==0x1ULL){
 					ret += fibs[i];
 					code>>=2;
 					i++;
