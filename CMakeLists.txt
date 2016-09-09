@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4.3)
 project(yunomi)
 
-find_package(HDF5 REQUIRED)
+find_package(HDF5 COMPONENTS CXX REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -fPIC -g")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")

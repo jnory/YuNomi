@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <H5Cpp.h>
 
 namespace yunomi {
@@ -124,7 +125,7 @@ namespace yunomi {
             template <typename T>
             HDF5Dataset create_dataset_immediate(std::string const &name, T data) {
                 auto data_type = HDF5DataType<T>::type();
-                uint64_t size = 1;
+                hsize_t size = 1;
                 H5::DataSpace space(1, &size);
                 H5::DataSet dataset = group_.createDataSet(name, data_type, space);
                 dataset.write(&data, data_type);

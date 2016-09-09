@@ -14,5 +14,10 @@ Data structures on this library can be serialized (HDF5 format).
 ## Usage
 Please see `examples` directory.
 
+## Build Test Case
+Please use cmake:
+> cmake /path/to/yunomi  
+> make
+
 ## LICENSE
 MIT

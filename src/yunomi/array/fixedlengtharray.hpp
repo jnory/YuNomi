@@ -64,7 +64,7 @@ namespace yunomi {
                 size_ = size;
             }
 
-            constexpr uint8_t bits_per_slot() const {
+            uint8_t bits_per_slot() const {
                 return n;
             }
 
@@ -107,7 +107,7 @@ namespace yunomi {
                 bits_.resize(size, 0);
             }
 
-            constexpr uint8_t bits_per_slot() const {
+            uint8_t bits_per_slot() const {
                 return 8;
             }
 
@@ -152,7 +152,7 @@ namespace yunomi {
                 bits_.resize(size, 0);
             }
 
-            constexpr uint8_t bits_per_slot() const {
+            uint8_t bits_per_slot() const {
                 return 16;
             }
 
@@ -197,7 +197,7 @@ namespace yunomi {
                 bits_.resize(size, 0);
             }
 
-            constexpr uint8_t bits_per_slot() const {
+            uint8_t bits_per_slot() const {
                 return 32;
             }
 
@@ -242,7 +242,7 @@ namespace yunomi {
                 bits_.resize(size, 0);
             }
 
-            constexpr uint8_t bits_per_slot() const {
+            uint8_t bits_per_slot() const {
                 return 64;
             }
 
@@ -299,7 +299,7 @@ namespace yunomi {
                 size_ = size;
             }
 
-            constexpr uint8_t bits_per_slot() const {
+            uint8_t bits_per_slot() const {
                 return n_digits_;
             }
 

@@ -18,4 +18,5 @@ set(SOURCES
         )
 
 add_executable(yunomi_tests ${SOURCES})
+message("${HDF5_LIBRARIES}")
 target_link_libraries(yunomi_tests gtest gtest_main ${HDF5_LIBRARIES})
