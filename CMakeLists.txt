@@ -1,46 +1,34 @@
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 3.4.3)
 project(yunomi)
 
-set(CMAKE_MACOSX_RPATH FALSE)
+find_package(HDF5 REQUIRED)
 
-find_package(Boost COMPONENTS python REQUIRED)
-find_package(PythonLibs REQUIRED)
-
-add_definitions(-DDALM_MAX_ORDER=6)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -fPIC")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -fPIC -g")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -flto")
-include_directories(${PROJECT_BINARY_DIR})
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${PYTHON_INCLUDE_DIRS})
+
+include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${HDF5_INCLUDE_DIRS})
 
 set(HEADERS
-    include/array_value_reader.h
-    include/fib_array.h
-    include/fib_coder.h
-    include/file_value_reader.h
-    include/gjc_array.h
-    include/value_reader.h
-    include/y_bitarray.h
-    include/y_defines.h
-    include/y_rank11.h
-    include/y_select11.h
-)
+        ${PROJECT_SOURCE_DIR}/src/yunomi/array/bitslicearray.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/array/fibonacciarray.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/array/filter11array.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/array/fixedlengtharray.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/code/fibonacci.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/core/defines.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/core/filter11.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/core/register.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/core/succinct.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/io/file.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/io/hdf5.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/serialize/hdf5.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/succinct/dual_block_index.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/succinct/rank.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/succinct/select.hpp
+        ${PROJECT_SOURCE_DIR}/src/yunomi/types/bigint.hpp
+        )
 
+add_subdirectory(tests)
+add_subdirectory(examples)
 
-add_library(_yunomi SHARED
-    python/_yunomi.cpp
-    ${HEADERS}
-    )
-
-target_link_libraries(
-    _yunomi
-    ${Boost_LIBRARIES}
-    ${PYTHON_LIBRARY}
-)
-set_target_properties(_yunomi PROPERTIES PREFIX "")
-set_target_properties(_yunomi PROPERTIES SUFFIX ".so")
-
-INSTALL(FILES ${HEADERS} DESTINATION include)
-INSTALL(TARGETS _yunomi LIBRARY DESTINATION python)
-INSTALL(FILES python/yunomi.py DESTINATION python)
