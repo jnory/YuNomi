@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 3.4.3)
 project(yunomi)
 
+find_package(Doxygen)
+IF(DOXYGEN_FOUND)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+        add_custom_target(
+                doc
+                ${DOXYGEN_EXECUTABLE} 
+                ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        )
+ENDIF(DOXYGEN_FOUND)
+
 find_package(HDF5 COMPONENTS CXX REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -fPIC -g")
