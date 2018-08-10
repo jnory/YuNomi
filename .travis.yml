@@ -6,3 +6,5 @@ addons:
     packages:
       - cmake
       - cmake-data
+      - g++-7
+      - libhdf5-dev
