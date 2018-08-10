@@ -1,0 +1,8 @@
+language: cpp
+script:
+  - mkdir build && cd build && cmake .. && make && ./tests/tests/yunomi_tests
+addons:
+  apt:
+    packages:
+      - cmake
+      - cmake-data
