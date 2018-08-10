@@ -3,6 +3,8 @@ script:
   - mkdir build && cd build && cmake .. && make && ./tests/tests/yunomi_tests
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
     packages:
       - cmake
       - cmake-data
