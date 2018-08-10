@@ -1,5 +1,7 @@
 # 湯呑(YuNomi)
 
+[![Build Status](https://travis-ci.com/jnory/YuNomi.svg?branch=master)](https://travis-ci.com/jnory/YuNomi)
+
 ## What's this?
 This is a library for succinct data structures.
 Also, this library containes compressed random-access array.
