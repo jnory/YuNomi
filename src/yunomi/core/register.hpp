@@ -22,7 +22,8 @@ namespace yunomi {
             * @brief calculate popcount on the given value.
             * @details
             * For given 64bit `value`, `n_ones()` calculates the number of ones appeared in the value on binary digits format.
-            * This function actually works as:
+            * This function works exactly same as:
+            * @code
             * constexpr uint8_t n_ones() const {
             *     uint8_t count = 0;
             *     for(int i = 0; i < 64; i++){
@@ -33,6 +34,7 @@ namespace yunomi {
             *     }
             *     return count;
             * }
+            * @endcode
             */
             constexpr
             uint8_t n_ones() const {
