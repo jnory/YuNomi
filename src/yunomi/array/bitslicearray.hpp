@@ -11,6 +11,23 @@
 
 namespace yunomi{
     namespace array {
+        /**
+         * @brief an implementation of bit-wise array.
+         * @details
+         * `BitSliceArray` implements a bit-wise array.
+         * You can (1) count the number of ones on this array, (2) extract/set some bits as/with uint64_t value.
+         * @code
+         * // Example usage.
+         * // create an array with length of 1024 (default)
+         * yunomi::array::BitSliceArray array;
+         * // set 1023 to the indices [0:10).
+         * array(0, 10) = 1023; 
+         * 
+         * // get the value from the indices [0:10).
+         * uint64_t ten_bits_value = array(0, 10);
+         * // ten_bits_value should be 1023.
+         * @endcode
+         */
         class BitSliceArray{
         public:
             union BitsType {
@@ -20,6 +37,9 @@ namespace yunomi{
 
             class Value;
 
+            /**
+            * @brief a helper class to handle uint64_t value.
+            */
             class ConstValue{
             public:
                 ConstValue(types::uint128_t const &block, uint64_t const &start, uint64_t const &length)
@@ -44,6 +64,9 @@ namespace yunomi{
                 uint64_t const length_;
             };
 
+            /**
+            * @brief a helper class to handle uint64_t value.
+            */
             class Value {
             public:
                 Value(types::uint128_t &block, uint64_t start, uint64_t length)
@@ -70,12 +93,23 @@ namespace yunomi{
                 ConstValue cv_;
             };
 
+            /**
+            * @brief constructor
+            * @details
+            * create a `BitSliceArray` with the given `length`.
+            * An instance is initialized by zeros.
+            */
             BitSliceArray(uint64_t length=1024): length_(length){
                 uint64_t n_data = calc_u64_size(length);
                 bits_.u64 = new uint64_t[n_data];
                 std::fill(bits_.u64, bits_.u64 + n_data, 0);
             }
 
+            /**
+            * @brief copy constructor
+            * @details
+            * create new `BitSliceArray` by copying given `other` array.
+            */
             BitSliceArray(BitSliceArray &other): length_(other.length_) {
                 uint64_t n_data = calc_u64_size(other.length_);
                 bits_.u64 = new uint64_t[n_data];
@@ -86,6 +120,13 @@ namespace yunomi{
                 delete [] bits_.u64;
             }
 
+            /**
+            * @brief extract values from `start` to `end`
+            * @details
+            * extract values from the array.
+            * @param[in] start an index of array, starting position of the extraction (`start`-th index is included in the result)
+            * @param[in] end an index of array, ending position of the extraction (`end`-th index is not included in the result)
+            */
             Value operator()(uint64_t start, uint64_t end){
                 assert(start <= end);
                 uint64_t data_idx = start >> UINT64_T_SIZE_BITS;
@@ -95,6 +136,13 @@ namespace yunomi{
                 return Value(*block.u128, bit_idx, end - start);
             }
 
+            /**
+            * @brief extract values from `start` to `end`
+            * @details
+            * extract values from the array.
+            * @param[in] start an index of array, starting position of the extraction (`start`-th index is included in the result)
+            * @param[in] end an index of array, ending position of the extraction (`end`-th index is not included in the result)
+            */
             const ConstValue operator()(uint64_t start, uint64_t end) const {
                 assert(start <= end);
                 uint64_t data_idx = start >> UINT64_T_SIZE_BITS;
@@ -104,10 +152,16 @@ namespace yunomi{
                 return ConstValue(*block.u128, bit_idx, end - start);
             }
 
+            /**
+            * @brief return the length of the array.
+            */
             uint64_t size() const {
                 return length_;
             }
 
+            /**
+            * @brief calculate the number of ones in the array.
+            */
             uint64_t n_ones() const {
                 uint64_t n = 0;
                 uint64_t n_data = calc_u64_size(length_);
@@ -117,6 +171,11 @@ namespace yunomi{
                 return n;
             }
 
+            /**
+            * @brief resize the array.
+            * @details
+            * resize the array. If growing, new elements are filled with zeros.
+            */
             void resize(uint64_t length){
                 uint64_t n_data = calc_u64_size(length_);
                 uint64_t *data = bits_.u64;
@@ -131,17 +190,28 @@ namespace yunomi{
                 length_ = length;
             }
 
+            /**
+            * @brief remove all data.
+            * @details
+            * remove all data and re-fill with zeros.
+            */
             void clear() {
                 uint64_t n_data = calc_u64_size(length_);
                 std::fill(bits_.u64, bits_.u64 + n_data, 0);
             }
 
+            /**
+            * @brief serialization helper
+            */
             void serialize(io::HDF5Group &g) const {
                 g.create_dataset_immediate("length_", length_);
                 uint64_t n_data = calc_u64_size(length_);
                 g.create_dataset_array("bits_", bits_.u64, n_data);
             }
 
+            /**
+            * @brief deserialization helper
+            */
             void deserialize(io::HDF5Group &g) {
                 length_ = g.dataset("length_").read_immediate<uint64_t>();
                 uint64_t n_data = calc_u64_size(length_);
