@@ -10,3 +10,6 @@ addons:
       - cmake-data
       - g++-7
       - libhdf5-dev
+env:
+  - CC=gcc-7
+  - CXX=g++-7
