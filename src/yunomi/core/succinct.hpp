@@ -4,11 +4,37 @@
 
 namespace yunomi {
     namespace core {
+
+        /**
+         * @brief an implementation of a select function for 8bits value
+         * @details
+         * This class is an implementation of a select function.
+         * `select` is one of the well known function, especially in the field "succinct data structure".
+         * 
+         * function `select(value, i)` is defined as:
+         * 
+         *     select(value, i) = \argmax_k rank(k) == i,
+         * 
+         * where:
+         * 
+         *     rank(value, i) = \sum_{j = 0}^{i - 1} value[j:j + 1].
+         * 
+         * On this implementation, `value` is restricted up to 8bits value (0 <= `value` < 256)
+         * 
+         */
         class Select8Bit {
         public:
             constexpr
             Select8Bit() {}
 
+            /**
+             * @brief execute the select operation for given input values
+             * @param[in] value any unsigned value up to 8bits
+             * @param[in] i specify the number that you want to get the index of i-th 1
+             * @return uint8_t 
+             * Index of digits that the given i-th one is found.
+             * If i-th one is not found, it returns larger than 8.
+             */
             constexpr
             uint8_t operator()(uint8_t value, uint8_t i) const {
                 return select_impl(value, i, 0, 0);
@@ -25,8 +51,15 @@ namespace yunomi {
             }
         };
 
+        /**
+         * @brief precomputed cache of `Select8Bit` results for a given value.
+         */
         class SelectDictImplValue {
         public:
+            /**
+             * @brief constructor. calculate all patterns for the given `value`
+             * @param value target value that need to be precomputed
+             */
             constexpr
             SelectDictImplValue(uint8_t value)
                     : dict_{
@@ -39,9 +72,14 @@ namespace yunomi {
                     Select8Bit()(value, 6),
                     Select8Bit()(value, 7)
             }
-
             {}
 
+            /**
+             * @brief get a precomputed `select(value, i)` value
+             * @param[in] i specify the number that you want to get the index of i-th 1
+             * @return uint8_t index of digits that the given i-th one is found.
+             * if i-th one is not found, it returns larger than 8.
+             */
             constexpr uint8_t operator[](uint8_t i) const {
                 return dict_[i];
             }
@@ -50,6 +88,9 @@ namespace yunomi {
             const uint8_t dict_[8];
         };
 
+        /**
+         * @brief precomputed cache of `Select8Bit` results for any 8bits value
+         */
         class SelectDictImpl {
         public:
             constexpr
@@ -313,6 +354,12 @@ namespace yunomi {
                             SelectDictImplValue(255)
                     } {}
 
+            /**
+             * @brief get a precomputed cache for given `value`
+             * @param[in] value specify any unsigned value up to 8bits.
+             * @return `SelectDictImpleValue&`
+             * Precomputed cache for the given `value`. 
+             */
             constexpr
             const SelectDictImplValue &operator[](uint8_t value) const {
                 return dict_[value];
@@ -322,11 +369,22 @@ namespace yunomi {
             const SelectDictImplValue dict_[256];
         };
 
+        /**
+         * @brief Precomputed cache for `Select8Bit`.
+         */
         class SelectDict{
         public:
             constexpr
             SelectDict(){}
 
+            /**
+             * @brief lookup precomputed value.
+             * @param[in] value any unsigned value up to 8bits
+             * @param[in] i specify the number that you want to get the index of i-th 1
+             * @return uint8_t 
+             * precomputed results of `Select8Bit()(value, i)`.
+             * This is useful when `Select8Bit` seems to be slow.
+             */
             constexpr
             uint8_t operator()(uint8_t value, uint8_t i) const {
                 return dict_[value][i];
@@ -336,10 +394,16 @@ namespace yunomi {
             SelectDictImpl dict_;
         };
 
+        /**
+         *  @brief utility class for calculating select function for uint64_t value
+         */
         class RegisterSuccinct {
         public:
             RegisterSuccinct(uint64_t value): value_(value){}
 
+            /**
+             * @brief calculate select function for `value_`
+             */
             uint8_t select(uint8_t i) const {
                 constexpr SelectDict select;
                 uint64_t value = value_;
